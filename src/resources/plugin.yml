@@ -1,0 +1,10 @@
+name: WitherSpawn
+main: com.minedhype.witherspawn.WitherSpawn
+author: Beez0r
+website: https://minedhype.com
+version: "${project.version}"
+api-version: "1.16"
+commands:
+  witherspawn:
+    description: "Wither Spawn Commands"
+    aliases: [ws]

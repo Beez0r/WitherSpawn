@@ -1,0 +1,85 @@
+# Enable this plugin to control Wither spawning
+enable: true
+
+# Set initial toggle to enable Wither spawning on server start or config reload
+# Setting to false will disable Wither spawns via toggle on server start or config reload
+initialToggleEnabled: true
+
+# Send message to server console if Wither spawned by player has been disabled or prevented
+sendConsoleMessages: true
+
+# Send message to players with permission witherspawn.notify of prevented Wither spawns
+sendNotifyMessages: true
+
+# Send message to server console when a player successfully spawns Wither with location
+sendSpawnMessagesConsole: true
+
+# Send message to players with permission witherspawn.notify when a player successfully spawns Wither with location
+sendSpawnMessagesNotify: true
+
+# Send message to players in a radius of attempted spawned Wither that it has been disabled or prevented
+sendPlayerMessages: true
+
+# Radius around attempted spawned Wither to message players about being disabled or prevented
+radius: 5
+
+# Radius players with witherspawn.bypass permission must be within to spawn Wither
+# Players with op or witherspawn.bypass permission can spawn unlimited Withers
+bypassRadius: 5
+
+# Radius players with witherspawn.deny permission must be within to prevent spawned Wither
+denyRadius: 5
+
+# Wither killing radius of player who used command '/ws radiuskill'
+killRadius: 25
+
+# Maximum amount of Withers allowed to be alive and present in the server
+# Setting to 0 will disable Wither spawns unless player has op or witherspawn.bypass permission
+maxWithers: 5
+
+# Disable Wither spawning above sea level (Y-level: 62) in Overworld
+noWithersAboveSeaLevelOverworld: false
+
+# No Wither block damage
+noWitherDamage: false
+
+# No Wither explosion damage
+noWitherExplosion: false
+
+# No Wither Status Effect that inflicts damage over time
+noWitherEffect: false
+
+# List of worlds that Wither spawning is disabled
+disabled_worlds:
+  - custom_world
+  - custom_world_2
+
+# Messages sent to players and console
+configReloaded: "&aWitherSpawn configuration file has been reloaded!"
+consoleNoKillRadius: "&cCannot kill Withers in radius of server console!"
+disabledWorld: "&cWither spawning is disabled in this world!"
+disabledAboveSeaLevel: "&cWither spawning is disabled above sea level in this world!"
+invalidRadius: "&cWither kill radius must be an integer greater than 0!"
+locationMessage: "&6Location XYZ: "
+maxLimitReached: "&cWither spawning has reached max limit for this server!"
+noPermission: "&cYou do not have permission for this command!"
+noWitherFound: "&cNo Withers have been found on this server!"
+noWitherRadius: "&cNo Withers found to kill within radius of"
+pluginDisabled: "&6WitherSpawn plugin is &cDISABLED&6!"
+pluginEnabled: "&6WitherSpawn plugin is &aENABLED&6!"
+radiusException: "&cYou did not enter a valid kill radius integer!"
+witherDisabled: "&6Wither spawning has been &cDISABLED&6!"
+witherEnabled: "&6Wither spawning has been &aENABLED&6!"
+witherList: "&6Listing all found Wither locations:"
+witherPreventDisabled: "&6Wither spawn prevented because max Withers is 0 at: "
+witherPreventedAboveSeaLevel: "&6Wither spawn prevented above sea level at: "
+witherPreventedLocation: "&6Wither spawn prevented because disabled at: "
+witherPreventedMaxLimit: "&6Wither spawn prevented due to max limit at: "
+witherPreventedPermission: "&6Wither spawn prevented due to deny permission at: "
+witherPreventedWorld: "&6Wither spawn prevented in disabled world: "
+witherRadiusRemoved: "&6total Withers have been removed within radius of "
+witherRemoved: "&6Total Withers removed: "
+witherSpawned: "&6Wither has been spawned at: "
+
+# Config version - Do not edit this!
+configVersion: 1.4
