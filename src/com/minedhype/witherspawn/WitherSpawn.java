@@ -13,6 +13,7 @@ import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.World;
+import com.minedhype.witherspawn.MetricsLite;
 
 public class WitherSpawn extends JavaPlugin {
 	private boolean witherEnabled;
@@ -42,6 +43,11 @@ public class WitherSpawn extends JavaPlugin {
 		Objects.requireNonNull(getCommand("witherspawn")).setExecutor(new Commands());
 		Bukkit.getServer().getScheduler().runTaskAsynchronously(WitherSpawn.getPlugin(WitherSpawn.class), this::getAllWithers);
 		witherConfigVars();
+		MetricsLite metrics = new MetricsLite(this, 9431);
+		new UpdateChecker(this, 82618).getVersion(version -> {
+			if(!this.getDescription().getVersion().equalsIgnoreCase(version))
+				getServer().getConsoleSender().sendMessage(ChatColor.RED + "[WitherSpawn] There is a new update available! - https://www.spigotmc.org/resources/wither-spawn.82618/");
+		});
 	}
 
 	public void createConfig() {

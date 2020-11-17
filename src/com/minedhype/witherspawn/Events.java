@@ -144,21 +144,17 @@ public class Events implements Listener {
 	@EventHandler
 	public void WitherExplosion(EntityExplodeEvent event) {
 		if(event.getEntityType().equals(EntityType.WITHER)) {
-			if(WitherSpawn.getPlugin().noWitherDamage) {
+			if(WitherSpawn.getPlugin().noWitherDamage)
 				event.blockList().clear();
-			}
-			if(WitherSpawn.getPlugin().noWitherExplosion) {
+			if(WitherSpawn.getPlugin().noWitherExplosion)
 				event.setCancelled(true);
-			}
 		}
 
 		if(event.getEntityType().equals(EntityType.WITHER_SKULL)) {
-			if(WitherSpawn.getPlugin().noWitherDamage) {
+			if(WitherSpawn.getPlugin().noWitherDamage)
 				event.blockList().clear();
-			}
-			if(WitherSpawn.getPlugin().noWitherExplosion) {
+			if(WitherSpawn.getPlugin().noWitherExplosion)
 				event.setCancelled(true);
-			}
 		}
 	}
 

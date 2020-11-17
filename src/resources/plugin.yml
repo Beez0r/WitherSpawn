@@ -3,7 +3,7 @@ main: com.minedhype.witherspawn.WitherSpawn
 author: Beez0r
 website: https://minedhype.com
 version: "${project.version}"
-api-version: "1.16"
+api-version: "1.14"
 commands:
   witherspawn:
     description: "Wither Spawn Commands"
