@@ -4,15 +4,16 @@ import java.io.File;
 import java.io.IOException;
 import java.util.List;
 import java.util.Objects;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.PreparedStatement;
+import java.sql.SQLException;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.configuration.InvalidConfigurationException;
-import org.bukkit.entity.Entity;
-import org.bukkit.entity.EntityType;
 import org.bukkit.plugin.java.JavaPlugin;
-import org.bukkit.World;
 import com.minedhype.witherspawn.MetricsLite;
 
 public class WitherSpawn extends JavaPlugin {
@@ -26,23 +27,47 @@ public class WitherSpawn extends JavaPlugin {
 	public boolean noWitherExplosion;
 	public boolean noWitherEffect;
 	public boolean playerMessages;
+	public boolean scanForPreviousWithers;
 	public boolean spawnedConsole;
 	public boolean spawnedNotify;
+	public double armor;
+	public double armorToughness;
+	public double attackDamage;
+	public double followRange;
+	public double knockbackResistance;
+	public double maxHealth;
+	public double movementSpeed;
 	public int killRadius;
 	public int bypassRadius;
 	public int denyRadius;
 	public int maxWithers;
 	public int radius;
+	public int scanTimeWithers;
+	private static Connection connection = null;
+	private static String chainConnect;
 	public static FileConfiguration config;
 	File configFile;
 
 	@Override
 	public void onEnable() {
+		chainConnect = "jdbc:sqlite:"+getDataFolder().getAbsolutePath()+"/data.db";
 		this.createConfig();
+		try {
+			connection = DriverManager.getConnection(chainConnect);
+			this.createTables();
+		} catch(Exception e) { e.printStackTrace(); }
 		getServer().getPluginManager().registerEvents(new Events(), this);
 		Objects.requireNonNull(getCommand("witherspawn")).setExecutor(new Commands());
-		Bukkit.getServer().getScheduler().runTaskAsynchronously(WitherSpawn.getPlugin(WitherSpawn.class), this::getAllWithers);
 		witherConfigVars();
+		Bukkit.getServer().getScheduler().runTask(WitherSpawn.getPlugin(WitherSpawn.class), Events::loadData);
+		if(scanForPreviousWithers) {
+			int scanTime;
+			try {
+				scanTime = scanTimeWithers*60*20;
+			} catch(Exception e) { scanTime = 6000; }
+			if(scanTime > 1000)
+				Bukkit.getServer().getScheduler().runTaskTimer(WitherSpawn.getPlugin(WitherSpawn.class), Events::scanForWithers, 100, scanTime);
+		}
 		MetricsLite metrics = new MetricsLite(this, 9431);
 		new UpdateChecker(this, 82618).getVersion(version -> {
 			if(!this.getDescription().getVersion().equalsIgnoreCase(version))
@@ -50,16 +75,50 @@ public class WitherSpawn extends JavaPlugin {
 		});
 	}
 
+	@Override
+	public void onDisable() {
+		if(connection != null) {
+			try {
+				connection.close();
+			} catch(SQLException e) { e.printStackTrace(); }
+		}
+	}
+
+	private void createTables() {
+		PreparedStatement[] stmts = new PreparedStatement[] {};
+		try {
+			stmts = new PreparedStatement[] {
+					connection.prepareStatement("CREATE TABLE IF NOT EXISTS entityData(uuid varchar(64) UNIQUE, location varchar(64), time varchar(64));"),
+			};
+		} catch(Exception e) { e.printStackTrace(); }
+		for(PreparedStatement stmt : stmts) {
+			try {
+				stmt.execute();
+				stmt.close();
+			} catch(Exception e) { e.printStackTrace(); }
+		}
+	}
+
+	public static Connection getConnection() {
+		checkConnection();
+		return connection;
+	}
+
+	public static void checkConnection() {
+		try {
+			if(connection == null || connection.isClosed() || !connection.isValid(0))
+				connection = DriverManager.getConnection(chainConnect);
+		} catch(Exception e) { e.printStackTrace(); }
+	}
+
 	public void createConfig() {
 		this.configFile = new File(getDataFolder(), "config.yml");
 		if(!this.configFile.exists())
 			this.saveDefaultConfig();
-
 		config = new YamlConfiguration();
-
 		try {
 			config.load(this.configFile);
-			String ver = config.getDouble("configVersion")+"";
+			String ver = config.getString("configVersion");
 			switch(ver) {
 				case "1.0":
 					config.set("locationMessage","&6Location XYZ: ");
@@ -93,29 +152,28 @@ public class WitherSpawn extends JavaPlugin {
 					config.set("witherSpawned","&6Wither has been spawned at: ");
 				case "1.3":
 					config.set("initialToggleEnabled", true);
-					config.set("configVersion", 1.4);
-					config.save(configFile);
 				case "1.4":
+					config.set("scanForPreviousWithers", true);
+					config.set("scanTimeWithers", 5);
+					config.set("witherMaxHealth", 300.0);
+					config.set("witherArmor", 4.0);
+					config.set("witherArmorToughness", 0.0);
+					config.set("witherAttackDamage", 2.0);
+					config.set("witherFollowRange", 40.0);
+					config.set("witherKnockbackResistance", 0.0);
+					config.set("witherMovementSpeed", 0.6);
+					config.set("witherFound", "&6Total Withers found: ");
+					config.set("configVersion", 1.5);
+					config.save(configFile);
+				case "1.5":
 					break;
 			}
 		} catch(IOException | InvalidConfigurationException e) { Bukkit.getConsoleSender().sendMessage(ChatColor.RED + "[WitherSpawn] Invalid config.yml file! Please delete file if it exists to regenerate!"); }
 	}
 
 	public boolean checkPluginEnabled() { return checkPluginEnabled; }
-
 	public boolean checkWitherToggle() { return witherEnabled; }
-
-	private void getAllWithers() {
-		for(World world : Bukkit.getWorlds())
-			for(Entity entity : world.getEntities())
-				if(entity.getType().equals(EntityType.WITHER))
-					Events.spawnedWithers.put(entity, entity.getUniqueId());
-	}
-
-	public static WitherSpawn getPlugin() {
-		return WitherSpawn.getPlugin(WitherSpawn.class);
-	}
-
+	public static WitherSpawn getPlugin() { return WitherSpawn.getPlugin(WitherSpawn.class); }
 	public void setWitherToggle(Boolean setToggle) { witherEnabled = setToggle; }
 
 	public void witherReloadConfig() {
@@ -145,5 +203,14 @@ public class WitherSpawn extends JavaPlugin {
 		denyRadius = config.getInt("denyRadius");
 		maxWithers = config.getInt("maxWithers");
 		radius = config.getInt("radius");
+		scanForPreviousWithers = config.getBoolean("scanForPreviousWithers");
+		scanTimeWithers = config.getInt("scanTimeWithers");
+		armor = config.getDouble("witherArmor");
+		armorToughness = config.getDouble("witherArmorToughness");
+		attackDamage = config.getDouble("witherAttackDamage");
+		followRange = config.getDouble("witherFollowRange");
+		knockbackResistance = config.getDouble("witherKnockbackResistance");
+		maxHealth = config.getDouble("witherMaxHealth");
+		movementSpeed = config.getDouble("witherMovementSpeed");
 	}
 }

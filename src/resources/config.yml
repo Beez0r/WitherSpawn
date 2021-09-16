@@ -54,6 +54,33 @@ disabled_worlds:
   - custom_world
   - custom_world_2
 
+# Enable scanning of previously spawned & existing Withers currently in server and add or update to database
+scanForPreviousWithers: true
+
+# Scheduled time in minutes to scan and update Withers loaded in server. Default is every 5 minutes
+scanTimeWithers: 5
+
+# Set maximum health. Default is 300.0
+witherMaxHealth: 300.0
+
+# Set armor. Default is 4.0
+witherArmor: 4.0
+
+# Set armor toughness. Default is 0.0
+witherArmorToughness: 0.0
+
+# Set attack damage. Default is 2.0
+witherAttackDamage: 2.0
+
+# Set follow range. Default is 40.0
+witherFollowRange: 40.0
+
+# Set knockback resistance. Default is 0.0
+witherKnockbackResistance: 0.0
+
+# Set movement speed. Default is 0.6
+witherMovementSpeed: 0.6
+
 # Messages sent to players and console
 configReloaded: "&aWitherSpawn configuration file has been reloaded!"
 consoleNoKillRadius: "&cCannot kill Withers in radius of server console!"
@@ -80,6 +107,7 @@ witherPreventedWorld: "&6Wither spawn prevented in disabled world: "
 witherRadiusRemoved: "&6total Withers have been removed within radius of "
 witherRemoved: "&6Total Withers removed: "
 witherSpawned: "&6Wither has been spawned at: "
+witherFound: "&6Total Withers found: "
 
 # Config version - Do not edit this!
-configVersion: 1.4
+configVersion: 1.5

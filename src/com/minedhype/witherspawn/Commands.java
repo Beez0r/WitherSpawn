@@ -1,6 +1,7 @@
 package com.minedhype.witherspawn;
 
-import java.util.Objects;
+import java.sql.PreparedStatement;
+import java.util.UUID;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.command.Command;
@@ -18,7 +19,6 @@ public class Commands implements CommandExecutor {
 			sender.sendMessage(Messages.NO_PERMISSION.toString());
 			return false;
 		}
-
 		if(args.length == 0)
 			listSubCmd(sender, label);
 		else if(args[0].equalsIgnoreCase("reload"))
@@ -30,26 +30,24 @@ public class Commands implements CommandExecutor {
 		else if(args[0].equalsIgnoreCase("toggle"))
 			toggleWither(sender);
 		else if(args[0].equalsIgnoreCase("killall"))
-			Bukkit.getServer().getScheduler().runTaskAsynchronously(WitherSpawn.getPlugin(), () -> killAll(sender));
+			killAll(sender);
 		else if(args[0].equalsIgnoreCase("list"))
 			Bukkit.getServer().getScheduler().runTaskAsynchronously(WitherSpawn.getPlugin(), () -> listWithers(sender));
 		else if(args[0].equalsIgnoreCase("radiuskill") && args.length == 1)
-			Bukkit.getServer().getScheduler().runTaskAsynchronously(WitherSpawn.getPlugin(), () -> radiusKill(sender, null));
+			radiusKill(sender, null);
 		else if(args[0].equalsIgnoreCase("radiuskill") && args.length >= 2)
-			Bukkit.getServer().getScheduler().runTaskAsynchronously(WitherSpawn.getPlugin(), () -> radiusKill(sender, args[1]));
+			radiusKill(sender, args[1]);
 		else
 		 	listSubCmd(sender, label);
-
 		return true;
 	}
 
-	private void killAll(CommandSender sender) {
+	public void killAll(CommandSender sender) {
 		int witherKillCount = 0;
 		for(World world : Bukkit.getWorlds())
 			for(Entity entity : world.getEntities())
 				if(entity.getType().equals(EntityType.WITHER)) {
-					if(Events.spawnedWithers.remove(entity, entity.getUniqueId())) ;
-					else { Events.spawnedWithers.remove(entity); }
+					Bukkit.getScheduler().runTaskAsynchronously(WitherSpawn.getPlugin(), () -> removeWitherInfo(entity.getUniqueId()));
 					entity.remove();
 					witherKillCount++;
 				}
@@ -57,26 +55,33 @@ public class Commands implements CommandExecutor {
 	}
 	
 	private void listSubCmd(CommandSender sender, String label) {
-			sender.sendMessage(ChatColor.GOLD + "WitherSpawn Commands:");
-			sender.sendMessage(ChatColor.GRAY + "/" + label + " list");
-			sender.sendMessage(ChatColor.GRAY + "/" + label + " killall");
-			sender.sendMessage(ChatColor.GRAY + "/" + label + " radiuskill");
-			sender.sendMessage(ChatColor.GRAY + "/" + label + " radiuskill #");
-			sender.sendMessage(ChatColor.GRAY + "/" + label + " reload");
-			sender.sendMessage(ChatColor.GRAY + "/" + label + " toggle");
+		sender.sendMessage(ChatColor.GOLD + "WitherSpawn Commands:");
+		sender.sendMessage(ChatColor.GRAY + "/" + label + " list");
+		sender.sendMessage(ChatColor.GRAY + "/" + label + " killall");
+		sender.sendMessage(ChatColor.GRAY + "/" + label + " radiuskill");
+		sender.sendMessage(ChatColor.GRAY + "/" + label + " radiuskill #");
+		sender.sendMessage(ChatColor.GRAY + "/" + label + " reload");
+		sender.sendMessage(ChatColor.GRAY + "/" + label + " toggle");
 	}
 
 	private void listWithers(CommandSender sender) {
-		int witherCount = 0;
 		sender.sendMessage(Messages.WITHER_LIST.toString());
-		for(World world : Bukkit.getWorlds())
-			for(Entity entity : world.getEntities())
-				if(entity.getType().equals(EntityType.WITHER)) {
-					witherCount++;
-					sender.sendMessage(Messages.LOCATION_MESSAGE.toString() + ChatColor.GREEN + entity.getLocation().getBlockX() + ChatColor.GOLD + " / " + ChatColor.GREEN + entity.getLocation().getBlockY() + ChatColor.GOLD + " / " + ChatColor.GREEN + entity.getLocation().getBlockZ() + ChatColor.GOLD + " in " + ChatColor.GREEN + Objects.requireNonNull(entity.getLocation().getWorld()).getName());
-				}
-		if(witherCount == 0)
+		if(Events.witherList.size() < 1)
 			sender.sendMessage(Messages.NO_WITHER_FOUND.toString());
+		else {
+			Events.witherList.forEach((k,v) -> v.forEach((location, time) -> {
+				int blockX = location.getBlockX();
+				int blockY = location.getBlockY();
+				int blockZ = location.getBlockZ();
+				String world;
+				if(location.getWorld().getName() != null)
+					world = location.getWorld().getName();
+				else
+					world = "unknown world";
+				sender.sendMessage(ChatColor.GREEN + k.toString() + " " + Messages.LOCATION_MESSAGE + ChatColor.GREEN + blockX + ChatColor.GOLD + " / " + ChatColor.GREEN + blockY + ChatColor.GOLD + " / " + ChatColor.GREEN + blockZ + ChatColor.GOLD + " in " + ChatColor.GREEN + world + ChatColor.GOLD + " (" + time + ")");
+			}));
+			sender.sendMessage(Messages.WITHER_FOUND.toString() + ChatColor.GREEN + Events.witherList.size());
+		}
 	}
 
 	private void radiusKill(CommandSender sender, String arg1) {
@@ -97,7 +102,6 @@ public class Commands implements CommandExecutor {
 				return;
 			}
 		}
-
 		if(argRadius == -1)
 			argRadius = WitherSpawn.getPlugin().killRadius;
 		int finalRadius = 0;
@@ -107,24 +111,22 @@ public class Commands implements CommandExecutor {
 		for(Entity entity : world.getEntities())
 			if(entity.getType().equals(EntityType.WITHER))
 				if(arg1 == null && player.getWorld().equals(entity.getWorld()) && entity.getLocation().distance(player.getLocation()) <= WitherSpawn.getPlugin().killRadius) {
-					if(Events.spawnedWithers.remove(entity, entity.getUniqueId())) ;
-					else { Events.spawnedWithers.remove(entity); }
+					Bukkit.getScheduler().runTaskAsynchronously(WitherSpawn.getPlugin(), () -> removeWitherInfo(entity.getUniqueId()));
 					entity.remove();
 					witherKillCount++;
 					finalRadius = WitherSpawn.getPlugin().killRadius;
 				} else if(arg1 != null && player.getWorld().equals(entity.getWorld()) && entity.getLocation().distance(player.getLocation()) <= argRadius) {
-					if(Events.spawnedWithers.remove(entity, entity.getUniqueId())) ;
-					else { Events.spawnedWithers.remove(entity); }
+					Bukkit.getScheduler().runTaskAsynchronously(WitherSpawn.getPlugin(), () -> removeWitherInfo(entity.getUniqueId()));
 					entity.remove();
 					witherKillCount++;
 					finalRadius = argRadius;
 				}
 		if(witherKillCount > 0)
-			sender.sendMessage(ChatColor.RED + String.valueOf(witherKillCount) + " " + Messages.WITHER_RADIUS_REMOVED.toString() + ChatColor.GREEN + finalRadius);
+			sender.sendMessage(ChatColor.RED + String.valueOf(witherKillCount) + " " + Messages.WITHER_RADIUS_REMOVED + ChatColor.GREEN + finalRadius);
 		else if(arg1 == null)
-			sender.sendMessage(Messages.NO_WITHER_RADIUS.toString() + " " + ChatColor.GREEN + WitherSpawn.getPlugin().killRadius);
+			sender.sendMessage(Messages.NO_WITHER_RADIUS + " " + ChatColor.GREEN + WitherSpawn.getPlugin().killRadius);
 		else
-			sender.sendMessage(Messages.NO_WITHER_RADIUS.toString() + " " + ChatColor.GREEN + argRadius);
+			sender.sendMessage(Messages.NO_WITHER_RADIUS + " " + ChatColor.GREEN + argRadius);
 	}
 	private void reloadConfigFile(CommandSender sender) {
 		WitherSpawn.getPlugin().witherReloadConfig();
@@ -139,5 +141,21 @@ public class Commands implements CommandExecutor {
 			WitherSpawn.getPlugin().setWitherToggle(true);
 			sender.sendMessage(Messages.WITHER_ENABLED.toString());
 		}
+	}
+
+	private void removeWitherInfo(UUID entityUUID) {
+			PreparedStatement stmt1 = null;
+			try {
+				stmt1 = WitherSpawn.getConnection().prepareStatement("DELETE FROM entityData WHERE uuid = ?;");
+				stmt1.setString(1, entityUUID.toString());
+				stmt1.execute();
+				Events.witherList.remove(entityUUID);
+			} catch (Exception e) { e.printStackTrace(); }
+			finally {
+				try {
+					if(stmt1 != null)
+						stmt1.close();
+				} catch (Exception e) { e.printStackTrace(); }
+			}
 	}
 }
