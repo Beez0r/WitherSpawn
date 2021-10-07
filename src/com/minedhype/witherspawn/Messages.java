@@ -28,7 +28,9 @@ public enum Messages {
 	WITHER_RADIUS_REMOVED("witherRadiusRemoved"),
 	WITHER_REMOVED("witherRemoved"),
 	WITHER_SPAWNED("witherSpawned"),
-	WITHER_FOUND("witherFound");
+	WITHER_FOUND("witherFound"),
+	WITHER_YLEVEL("witherYLevel"),
+	WITHER_YLEVEL_PREVENTED("witherYLevelPrevented");
 	private final String msg;
 
 	Messages(String msg) {

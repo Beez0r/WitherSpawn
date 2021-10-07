@@ -81,6 +81,27 @@ witherKnockbackResistance: 0.0
 # Set movement speed. Default is 0.6
 witherMovementSpeed: 0.6
 
+# Prevent anvil damage for Withers. Default is false
+witherAnvil: false
+
+# Cancel dropping of Nether Star item if Wither died from any death_reasons. Default is false
+witherDropCancel: false
+
+# Cancel dropping of experience (XP) if Wither died from any death_reasons. Default is false
+witherXPCancel: false
+
+# Death reasons that will not prevent Wither from dropping Nether Star item.
+# Any valid Enum Constant can be used from https://hub.spigotmc.org/javadocs/bukkit/org/bukkit/event/entity/EntityDamageEvent.DamageCause.html
+death_reasons:
+  - SUFFOCATION
+  - DROWNING
+
+# Minimum Y-Coordinate Wither is allowed to be spawned, anything below number will be prevented. Default 0 for disabled
+witherYCordMin: 0
+
+# Maximum Y-Coordinate Wither is allowed to be spawned, anything above number will be prevented. Default 0 for disabled
+witherYCordMax: 0
+
 # Messages sent to players and console
 configReloaded: "&aWitherSpawn configuration file has been reloaded!"
 consoleNoKillRadius: "&cCannot kill Withers in radius of server console!"
@@ -108,6 +129,8 @@ witherRadiusRemoved: "&6total Withers have been removed within radius of "
 witherRemoved: "&6Total Withers removed: "
 witherSpawned: "&6Wither has been spawned at: "
 witherFound: "&6Total Withers found: "
+witherYLevel: "&cWither spawning at this Y-Coordinate has been disabled!"
+witherYLevelPrevented: "&6Wither spawn prevented due to Y-Coordinate at: "
 
 # Config version - Do not edit this!
-configVersion: 1.5
+configVersion: 1.6

@@ -11,13 +11,16 @@ import java.util.concurrent.ConcurrentHashMap;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
+import org.bukkit.Tag;
 import org.bukkit.World;
 import org.bukkit.attribute.Attribute;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
+import org.bukkit.entity.FallingBlock;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.entity.EntityChangeBlockEvent;
+import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.event.entity.EntityDamageEvent.DamageCause;
 import org.bukkit.event.entity.EntityExplodeEvent;
@@ -53,8 +56,8 @@ public class Events implements Listener {
 						ent.getAttribute(Attribute.GENERIC_FOLLOW_RANGE).setBaseValue(WitherSpawn.getPlugin().followRange);
 					if(WitherSpawn.getPlugin().knockbackResistance > 0.0)
 						ent.getAttribute(Attribute.GENERIC_KNOCKBACK_RESISTANCE).setBaseValue(WitherSpawn.getPlugin().knockbackResistance);
-					if(WitherSpawn.getPlugin().movementSpeed > 0.0 && WitherSpawn.getPlugin().maxHealth != 300.0)
-						ent.getAttribute(Attribute.GENERIC_MAX_HEALTH).setBaseValue(WitherSpawn.getPlugin().movementSpeed);
+					if(WitherSpawn.getPlugin().maxHealth > 0.0 && WitherSpawn.getPlugin().maxHealth != 300.0)
+						ent.getAttribute(Attribute.GENERIC_MAX_HEALTH).setBaseValue(WitherSpawn.getPlugin().maxHealth);
 					if(WitherSpawn.getPlugin().movementSpeed > 0.0 && WitherSpawn.getPlugin().movementSpeed != 0.6)
 						ent.getAttribute(Attribute.GENERIC_MOVEMENT_SPEED).setBaseValue(WitherSpawn.getPlugin().movementSpeed);
 					return;
@@ -116,6 +119,51 @@ public class Events implements Listener {
 					return;
 				}
 			}
+			if(WitherSpawn.getPlugin().yMin != 0 && WitherSpawn.getPlugin().yMax != 0) {
+				if(event.getLocation().getBlockY() < WitherSpawn.getPlugin().yMin && event.getLocation().getBlockY() > WitherSpawn.getPlugin().yMax) {
+					event.setCancelled(true);
+					Bukkit.getServer().getScheduler().runTaskAsynchronously(WitherSpawn.getPlugin(), () -> {
+						if(WitherSpawn.getPlugin().notifyMessages)
+							Bukkit.broadcast(Messages.WITHER_YLEVEL_PREVENTED.toString() + ChatColor.GREEN + event.getLocation().getBlockX() + ChatColor.GOLD + " / " + ChatColor.GREEN + event.getLocation().getBlockY() + ChatColor.GOLD + " / " + ChatColor.GREEN + event.getLocation().getBlockZ() + ChatColor.GOLD + " in " + ChatColor.GREEN + Objects.requireNonNull(event.getLocation().getWorld()).getName(), Permission.WS_NOTIFY.toString());
+						if(WitherSpawn.getPlugin().notifyConsole)
+							Bukkit.getConsoleSender().sendMessage(Messages.WITHER_YLEVEL_PREVENTED.toString() + ChatColor.GREEN + event.getLocation().getBlockX() + ChatColor.GOLD + " / " + ChatColor.GREEN + event.getLocation().getBlockY() + ChatColor.GOLD + " / " + ChatColor.GREEN + event.getLocation().getBlockZ() + ChatColor.GOLD + " in " + ChatColor.GREEN + Objects.requireNonNull(event.getLocation().getWorld()).getName());
+						for(Player player : Bukkit.getServer().getOnlinePlayers())
+							if(WitherSpawn.getPlugin().playerMessages && player.getWorld().equals(event.getLocation().getWorld()) && event.getLocation().distance(player.getLocation()) <= WitherSpawn.getPlugin().radius)
+								player.sendMessage(Messages.WITHER_YLEVEL.toString());
+					});
+					return;
+				}
+			}
+			else if(WitherSpawn.getPlugin().yMin != 0 && WitherSpawn.getPlugin().yMax == 0) {
+				if(event.getLocation().getBlockY() < WitherSpawn.getPlugin().yMin) {
+					event.setCancelled(true);
+					Bukkit.getServer().getScheduler().runTaskAsynchronously(WitherSpawn.getPlugin(), () -> {
+						if(WitherSpawn.getPlugin().notifyMessages)
+							Bukkit.broadcast(Messages.WITHER_YLEVEL_PREVENTED.toString() + ChatColor.GREEN + event.getLocation().getBlockX() + ChatColor.GOLD + " / " + ChatColor.GREEN + event.getLocation().getBlockY() + ChatColor.GOLD + " / " + ChatColor.GREEN + event.getLocation().getBlockZ() + ChatColor.GOLD + " in " + ChatColor.GREEN + Objects.requireNonNull(event.getLocation().getWorld()).getName(), Permission.WS_NOTIFY.toString());
+						if(WitherSpawn.getPlugin().notifyConsole)
+							Bukkit.getConsoleSender().sendMessage(Messages.WITHER_YLEVEL_PREVENTED.toString() + ChatColor.GREEN + event.getLocation().getBlockX() + ChatColor.GOLD + " / " + ChatColor.GREEN + event.getLocation().getBlockY() + ChatColor.GOLD + " / " + ChatColor.GREEN + event.getLocation().getBlockZ() + ChatColor.GOLD + " in " + ChatColor.GREEN + Objects.requireNonNull(event.getLocation().getWorld()).getName());
+						for(Player player : Bukkit.getServer().getOnlinePlayers())
+							if(WitherSpawn.getPlugin().playerMessages && player.getWorld().equals(event.getLocation().getWorld()) && event.getLocation().distance(player.getLocation()) <= WitherSpawn.getPlugin().radius)
+								player.sendMessage(Messages.WITHER_YLEVEL.toString());
+					});
+					return;
+				}
+			}
+			else if(WitherSpawn.getPlugin().yMax != 0 && WitherSpawn.getPlugin().yMin == 0) {
+				if(event.getLocation().getBlockY() > WitherSpawn.getPlugin().yMax) {
+					event.setCancelled(true);
+					Bukkit.getServer().getScheduler().runTaskAsynchronously(WitherSpawn.getPlugin(), () -> {
+						if(WitherSpawn.getPlugin().notifyMessages)
+							Bukkit.broadcast(Messages.WITHER_YLEVEL_PREVENTED.toString() + ChatColor.GREEN + event.getLocation().getBlockX() + ChatColor.GOLD + " / " + ChatColor.GREEN + event.getLocation().getBlockY() + ChatColor.GOLD + " / " + ChatColor.GREEN + event.getLocation().getBlockZ() + ChatColor.GOLD + " in " + ChatColor.GREEN + Objects.requireNonNull(event.getLocation().getWorld()).getName(), Permission.WS_NOTIFY.toString());
+						if(WitherSpawn.getPlugin().notifyConsole)
+							Bukkit.getConsoleSender().sendMessage(Messages.WITHER_YLEVEL_PREVENTED.toString() + ChatColor.GREEN + event.getLocation().getBlockX() + ChatColor.GOLD + " / " + ChatColor.GREEN + event.getLocation().getBlockY() + ChatColor.GOLD + " / " + ChatColor.GREEN + event.getLocation().getBlockZ() + ChatColor.GOLD + " in " + ChatColor.GREEN + Objects.requireNonNull(event.getLocation().getWorld()).getName());
+						for(Player player : Bukkit.getServer().getOnlinePlayers())
+							if(WitherSpawn.getPlugin().playerMessages && player.getWorld().equals(event.getLocation().getWorld()) && event.getLocation().distance(player.getLocation()) <= WitherSpawn.getPlugin().radius)
+								player.sendMessage(Messages.WITHER_YLEVEL.toString());
+					});
+					return;
+				}
+			}
 			int currentAliveWithers = 0;
 			for(World world : Bukkit.getWorlds())
 				for(Entity entity : world.getEntities())
@@ -153,8 +201,8 @@ public class Events implements Listener {
 				ent.getAttribute(Attribute.GENERIC_FOLLOW_RANGE).setBaseValue(WitherSpawn.getPlugin().followRange);
 			if(WitherSpawn.getPlugin().knockbackResistance > 0.0)
 				ent.getAttribute(Attribute.GENERIC_KNOCKBACK_RESISTANCE).setBaseValue(WitherSpawn.getPlugin().knockbackResistance);
-			if(WitherSpawn.getPlugin().movementSpeed > 0.0 && WitherSpawn.getPlugin().maxHealth != 300.0)
-				ent.getAttribute(Attribute.GENERIC_MAX_HEALTH).setBaseValue(WitherSpawn.getPlugin().movementSpeed);
+			if(WitherSpawn.getPlugin().maxHealth > 0.0 && WitherSpawn.getPlugin().maxHealth != 300.0)
+				ent.getAttribute(Attribute.GENERIC_MAX_HEALTH).setBaseValue(WitherSpawn.getPlugin().maxHealth);
 			if(WitherSpawn.getPlugin().movementSpeed > 0.0 && WitherSpawn.getPlugin().movementSpeed != 0.6)
 				ent.getAttribute(Attribute.GENERIC_MOVEMENT_SPEED).setBaseValue(WitherSpawn.getPlugin().movementSpeed);
 			Bukkit.getServer().getScheduler().runTaskAsynchronously(WitherSpawn.getPlugin(), () -> {
@@ -203,8 +251,48 @@ public class Events implements Listener {
 
 	@EventHandler
 	public void WitherDeath(EntityDeathEvent event) {
-		if(event.getEntity().getType().equals(EntityType.WITHER))
+		if(event.getEntity().getType().equals(EntityType.WITHER)) {
+			if(WitherSpawn.getPlugin().deathDrop && WitherSpawn.getPlugin().deathXP) {
+				for(String checkDeaths : WitherSpawn.getPlugin().death_reasons) {
+					DamageCause damageCause = DamageCause.valueOf(checkDeaths);
+					if(damageCause != null && event.getEntity().getLastDamageCause().equals(damageCause)) {
+						event.getDrops().clear();
+						event.setDroppedExp(0);
+						break;
+					}
+				}
+			}
+			else if(WitherSpawn.getPlugin().deathDrop && !WitherSpawn.getPlugin().deathXP) {
+				for(String checkDeaths : WitherSpawn.getPlugin().death_reasons) {
+					DamageCause damageCause = DamageCause.valueOf(checkDeaths);
+					if(damageCause != null && event.getEntity().getLastDamageCause().equals(damageCause)) {
+						event.getDrops().clear();
+						break;
+					}
+				}
+
+			}
+			else if(!WitherSpawn.getPlugin().deathDrop && WitherSpawn.getPlugin().deathXP) {
+				for(String checkDeaths : WitherSpawn.getPlugin().death_reasons) {
+					DamageCause damageCause = DamageCause.valueOf(checkDeaths);
+					if(damageCause != null && event.getEntity().getLastDamageCause().equals(damageCause)) {
+						event.setDroppedExp(0);
+						break;
+					}
+				}
+			}
 			Bukkit.getScheduler().runTaskAsynchronously(WitherSpawn.getPlugin(), () -> removeWitherInfo(event.getEntity().getUniqueId()));
+		}
+	}
+
+	@EventHandler
+	public void WitherAnvil(EntityDamageByEntityEvent event) {
+		if(event.getEntity().getType().equals(EntityType.WITHER) && event.getDamager() instanceof FallingBlock) {
+			FallingBlock fallingBlock = (FallingBlock) event.getDamager();
+			if(WitherSpawn.getPlugin().preventAnvilDamage)
+				if(Tag.ANVIL.isTagged(fallingBlock.getBlockData().getMaterial()))
+					event.setCancelled(true);
+		}
 	}
 
 	public static void loadData() {

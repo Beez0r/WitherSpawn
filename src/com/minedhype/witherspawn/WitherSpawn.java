@@ -2,6 +2,7 @@ package com.minedhype.witherspawn;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 import java.sql.Connection;
@@ -19,7 +20,10 @@ import com.minedhype.witherspawn.MetricsLite;
 public class WitherSpawn extends JavaPlugin {
 	private boolean witherEnabled;
 	public List<String> disabled_worlds;
+	public List<String> death_reasons;
 	public boolean checkPluginEnabled;
+	public boolean deathDrop;
+	public boolean deathXP;
 	public boolean notifyConsole;
 	public boolean notifyMessages;
 	public boolean noSeaLevel;
@@ -27,6 +31,7 @@ public class WitherSpawn extends JavaPlugin {
 	public boolean noWitherExplosion;
 	public boolean noWitherEffect;
 	public boolean playerMessages;
+	public boolean preventAnvilDamage;
 	public boolean scanForPreviousWithers;
 	public boolean spawnedConsole;
 	public boolean spawnedNotify;
@@ -43,6 +48,8 @@ public class WitherSpawn extends JavaPlugin {
 	public int maxWithers;
 	public int radius;
 	public int scanTimeWithers;
+	public int yMin;
+	public int yMax;
 	private static Connection connection = null;
 	private static String chainConnect;
 	public static FileConfiguration config;
@@ -163,9 +170,19 @@ public class WitherSpawn extends JavaPlugin {
 					config.set("witherKnockbackResistance", 0.0);
 					config.set("witherMovementSpeed", 0.6);
 					config.set("witherFound", "&6Total Withers found: ");
-					config.set("configVersion", 1.5);
-					config.save(configFile);
 				case "1.5":
+					config.set("witherAnvil", false);
+					config.set("witherDropCancel", false);
+					config.set("witherXPCancel", false);
+					List<String> deathReasons = Arrays.asList("SUFFOCATION", "DROWNING");
+					config.set("death_reasons", deathReasons);
+					config.set("witherYCordMin", 0);
+					config.set("witherYCordMan", 0);
+					config.set("witherYLevel", "&cWither spawning at this Y-Coordinate has been disabled!");
+					config.set("witherYLevelPrevented", "&6Wither spawn prevented due to Y-Coordinate at: ");
+					config.set("configVersion", 1.6);
+					config.save(configFile);
+				case "1.6":
 					break;
 			}
 		} catch(IOException | InvalidConfigurationException e) { Bukkit.getConsoleSender().sendMessage(ChatColor.RED + "[WitherSpawn] Invalid config.yml file! Please delete file if it exists to regenerate!"); }
@@ -212,5 +229,11 @@ public class WitherSpawn extends JavaPlugin {
 		knockbackResistance = config.getDouble("witherKnockbackResistance");
 		maxHealth = config.getDouble("witherMaxHealth");
 		movementSpeed = config.getDouble("witherMovementSpeed");
+		deathDrop = config.getBoolean("witherDropCancel");
+		deathXP = config.getBoolean("witherXPCancel");
+		death_reasons = config.getStringList("death_reasons");
+		preventAnvilDamage = config.getBoolean("witherAnvil");
+		yMin = config.getInt("witherYCordMin");
+		yMax = config.getInt("witherYCordMax");
 	}
 }
