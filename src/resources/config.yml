@@ -90,7 +90,7 @@ witherDropCancel: false
 # Cancel dropping of experience (XP) if Wither died from any death_reasons. Default is false
 witherXPCancel: false
 
-# Death reasons that will not prevent Wither from dropping Nether Star item.
+# Death reasons that will prevent Wither from dropping Nether Star item or XP
 # Any valid Enum Constant can be used from https://hub.spigotmc.org/javadocs/bukkit/org/bukkit/event/entity/EntityDamageEvent.DamageCause.html
 death_reasons:
   - SUFFOCATION
